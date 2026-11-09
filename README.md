@@ -42,13 +42,19 @@ El comando descarga `Stream_Codex.zip` desde este repositorio, verifica su integ
 - Stream Codex, ejecutado como servicio de systemd (`stream-codex`).
 - Respaldo automático diario.
 - HTTPS con certificado de Let's Encrypt para la IP del servidor y renovación automática.
+- Ajustes de red para streaming (BBR) y límites del sistema para muchos procesos FFmpeg.
+- Vigilante de canales (`cdx-health`), que registra en `/var/log/stream-codex-health.log` los canales cuyo último segmento supera los 20 segundos.
+- Herramienta de diagnóstico `cdx-diagnose` (solo lectura; oculta URLs y claves).
+- Protección para que las actualizaciones de paquetes no reinicien el servidor ni el servicio automáticamente.
 
 ### Al terminar
 
 - El panel queda disponible en `https://TU_IP_PUBLICA/dashboard`.
+- El instalador comprueba la configuración instalada (servicio, panel, Nginx, HTTPS, certificado, FFmpeg, red y tareas programadas) y muestra cada resultado como OK o AVISO.
 - El instalador muestra un enlace privado de configuración inicial. No lo compartas.
 - Estado del servicio: `systemctl status stream-codex`
 - Registro del servicio: `journalctl -u stream-codex -n 50 --no-pager`
+- Diagnóstico completo: `cdx-diagnose`
 
 ## Instalación manual
 
@@ -74,7 +80,7 @@ sha256sum Stream_Codex.zip
 La suma SHA-256 del paquete actual es:
 
 ```
-cced1fc2a5c4ab3022fb6d937bc69de39080cf585d3e08ba2e0aa2818d7333ed
+62a68e45b3d79d9fb9f538efec2933b7b8cbfd60e4fc7b2b962da8ea04f784f9
 ```
 
 Si el valor no coincide, no instales el paquete.
@@ -87,3 +93,10 @@ Si el valor no coincide, no instales el paquete.
 ```bash
 tail -n 40 $(ls -t /var/log/stream-panel-install-*.log | head -n 1)
 ```
+
+Si el instalador termina con **AVISOS**, ejecuta `cdx-diagnose` y revisa qué verificación no se confirmó. El registro del lanzador queda en `/var/log/stream-codex-launcher-*.log`.
+
+## Límites conocidos
+
+- La continuidad de los canales depende de la fuente, la red, el hardware y el reproductor. Este paquete no declara una capacidad máxima comprobada ni garantiza ausencia de cortes.
+- Reiniciar el servicio `stream-codex` detiene todos los canales a la vez.
